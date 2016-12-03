@@ -1,0 +1,62 @@
+#.................................MODELO LOGÍSTICO...........................................
+#Población objetivo: Población urbana 
+#Variables dependientes: 
+#                          * Trabaja para un familiar
+#                          *Trabaja para un no familiar 
+#                          *Trabaja por cuenta propia 
+# Variables independientes:
+#                          *sex  
+#                          *eda1
+#                          *asis
+#                          *t_apo1
+#                          
+#Base de datos: MTI 2013. 
+
+install.packages("questionr")
+require(questionr)
+install.packages("foreign")
+require(foreign)
+install.packages("plyr")
+require(plyr)
+install.packages("nnet")
+require(nnet)
+
+setwd("C://Users//Maria//Desktop")
+
+SDEM<- data.frame(read.dbf("mti2013_05_17_sdem_precodificado.dbf"))
+
+# variables dependientes 
+SDEM$T_PER <- revalue(factor(SDEM$T_PER), c("4"=NA))
+SDEM$T_PER <- factor(SDEM$T_PER, levels = c(1,2,3), labels = c("Familiar", "No familiar", "Cuenta propia"))
+table(SDEM$T_PER)
+
+#Variables independientes 
+#                          *SEX
+SDEM$SEX <- factor(SDEM$SEX, levels = c(1,2), labels = c("Hombre", "Mujer"))
+table(SDEM$SEX)
+#                          *EDA1
+SDEM$EDA1 <- factor(SDEM$EDA1, levels = c(1,2,3), labels = c("5 a 9", "10 a 13", "14 a 17"))
+table(SDEM$EDA1)
+#                          *ASIS
+SDEM$ASIS <- factor(SDEM$ASIS, levels = c(1,2), labels = c("Asiste", "No asiste"))
+table(SDEM$ASIS)
+#                          *T_APO1
+SDEM$T_APO1 <- factor(SDEM$T_APO1, levels = c(1,2,3,4,5), labels = c("B", "PG","AF", "OT", "NA"))
+table(SDEM$T_APO1)
+#B :Beca para estudiar
+#PG: Otro programa de gobierno
+#AF:Ayuda de un familiar que vive en otro hogar
+#OT: Otro tipo de ayuda
+#NA: No ha recibido ayuda
+
+
+modlog <- multinom(SDEM$T_PER~1, data = SDEM)
+modlog1 <- multinom(T_PER~ SEX+ EDA1+ ASIS+ T_APO1, data = SDEM)
+ml <- summary(modlog1, Wald= T)    
+print(ml)
+                
+
+install.packages("stargazer")
+require(stargazer)\
+S <- stargazer(modlog1, type = "text", title = "coeficientes", summary = T)
+stargazer(modlog1, type = "text",title = "mlogit urbano", digits = 2, out = "C:\\Users\\Maria\\Desktop")
